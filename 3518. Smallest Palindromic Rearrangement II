@@ -1,0 +1,101 @@
+import java.util.*;
+
+class Solution {
+
+    long LIMIT;
+
+    public String smallestPalindrome(String s, int k) {
+        LIMIT = k;
+
+        int[] freq = new int[26];
+
+        for (char ch : s.toCharArray()) {
+            freq[ch - 'a']++;
+        }
+
+        String mid = "";
+
+        int[] half = new int[26];
+        int len = 0;
+
+        for (int i = 0; i < 26; i++) {
+            if ((freq[i] & 1) == 1) {
+                mid = String.valueOf((char) ('a' + i));
+            }
+            half[i] = freq[i] / 2;
+            len += half[i];
+        }
+
+        if (countWays(half, len) < k)
+            return "";
+
+        StringBuilder left = new StringBuilder();
+
+        while (len > 0) {
+
+            for (int i = 0; i < 26; i++) {
+
+                if (half[i] == 0)
+                    continue;
+
+                half[i]--;
+
+                long ways = countWays(half, len - 1);
+
+                if (ways >= k) {
+                    left.append((char) ('a' + i));
+                    len--;
+                    break;
+                } else {
+                    k -= ways;
+                    half[i]++;
+                }
+            }
+        }
+
+        String right = new StringBuilder(left).reverse().toString();
+
+        return left.toString() + mid + right;
+    }
+
+    private long countWays(int[] half, int total) {
+
+        long ans = 1;
+
+        int rem = total;
+
+        for (int x : half) {
+
+            if (x == 0)
+                continue;
+
+            ans *= nCr(rem, x);
+
+            if (ans > LIMIT)
+                return LIMIT;
+
+            rem -= x;
+        }
+
+        return Math.min(ans, LIMIT);
+    }
+
+    private long nCr(int n, int r) {
+
+        if (r > n)
+            return 0;
+
+        r = Math.min(r, n - r);
+
+        long ans = 1;
+
+        for (int i = 1; i <= r; i++) {
+            ans = ans * (n - r + i) / i;
+
+            if (ans > LIMIT)
+                return LIMIT;
+        }
+
+        return ans;
+    }
+}
